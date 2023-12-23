@@ -5,7 +5,7 @@
 ##
 
 FROM library/archlinux:latest
-#MAINTAINER nlhomme (https://github.com/nlhomme/archiso-builder)
+MAINTAINER aurumfoundation (https://aurumfoundation.pp.ua)
 
 #Sync packages databases
 RUN pacman -Sy

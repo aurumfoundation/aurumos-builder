@@ -1,23 +1,27 @@
-name: Docker Image CI
+name: Build and Upload Artifact
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
-    - uses: actions/upload-artifact@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Build Docker Image
+      run: docker build -t aurum-builder .
+
+    - name: Run Docker Container
+      run: docker run -v $(pwd):/tmp/ aurum-builder
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
       with:
-        name: ISO
-        path: /tmp/*.iso
+        name: aurumOS UNSTABLE image
+        path: /tmp/aurumOS_unstable.iso

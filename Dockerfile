@@ -1,43 +1,56 @@
 # Use a base image with necessary build tools
 FROM ubuntu:latest
-MAINTAINER aurumfoundation
 
 # Install dependencies
 RUN apt-get update && \
-    apt-get install -y build-essential git
+    apt-get install -y \
+        build-essential \
+        git \
+        libncurses5-dev \
+        flex \
+        bison \
+        libssl-dev \
+        gnupg \
+        wget \
+        bc \
+        libelf-dev \
+        busybox-static \
+        xorriso \
+        nasm \
+        mtools
 
 # Clone the Linux kernel repository
-RUN git clone --depth 1 https://github.com/torvalds/linux.git /linux
+RUN git clone --depth 1 https://github.com/torvalds/linux.git /github/workspace/linux
 
 # Build the Linux kernel
-WORKDIR /linux
+WORKDIR /github/workspace/linux
 RUN make defconfig && \
     make -j$(nproc) && \
-    make INSTALL_PATH=/system/boot/kernel install
+    make INSTALL_PATH=/github/workspace/system/boot/kernel install
 
 # Clone Busybox repository
-RUN git clone --depth 1 https://github.com/mirror/busybox.git /busybox
+RUN git clone --depth 1 https://github.com/mirror/busybox.git /github/workspace/busybox
 
 # Build Busybox
-WORKDIR /busybox
+WORKDIR /github/workspace/busybox
 RUN make defconfig && \
     make -j$(nproc) && \
-    make CONFIG_PREFIX=/system/ install
+    make CONFIG_PREFIX=/github/workspace/system/ install
 
 # Clone Limine bootloader repository
-RUN git clone --depth 1 https://github.com/limine-bootloader/limine.git /limine
+RUN git clone --depth 1 https://github.com/limine-bootloader/limine.git /github/workspace/limine
 
 # Build Limine bootloader
-WORKDIR /limine
+WORKDIR /github/workspace/limine
 RUN make
 
 # Create minimal Linux distro structure
-RUN mkdir -p /system/boot/configs/
+RUN mkdir -p /github/workspace/system/boot/configs/
 COPY entry_point.sh /entry_point.sh
-COPY limine.cfg /system/boot/configs/
+COPY limine.cfg /github/workspace/system/boot/configs/
 
 # Cleanup unnecessary files
-RUN rm -rf /linux /busybox /limine
+RUN rm -rf /github/workspace/linux /github/workspace/busybox /github/workspace/limine
 
 # Set entry point
 ENTRYPOINT ["/entry_point.sh"]
